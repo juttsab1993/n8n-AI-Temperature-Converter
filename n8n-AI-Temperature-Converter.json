@@ -1,0 +1,202 @@
+{
+  "name": "Week 14 Code Node + Expressions",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -96
+      ],
+      "id": "e70f0c8d-4a5e-4ba0-9453-51fc0de5d8d8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate one random temperature between -20 and 120 Fahrenheit for testing.\n\nSet:\n- temperature.value to the random number\n- temperature.format to \"Fahrenheit\"\n\nFollow the required structured output format exactly.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        -176
+      ],
+      "id": "877d7748-40da-44b4-9e86-2aaba60a80a8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        208
+      ],
+      "id": "5078a56a-7433-498b-bd3b-d14be245bae8",
+      "name": "Groq Chat Model",
+      
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W9PyYBpiWc0Sdu6mcbGbuhu89s7u0Cglide_VBpb8ZQ",
+          "mode": "list",
+          "cachedResultName": "java Temperature F to C ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W9PyYBpiWc0Sdu6mcbGbuhu89s7u0Cglide_VBpb8ZQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W9PyYBpiWc0Sdu6mcbGbuhu89s7u0Cglide_VBpb8ZQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Temperature F": "={{ $json.Farnhight }}",
+            "Temperature C": "={{ $json.Celsius }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Temperature F",
+              "displayName": "Temperature F",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Temperature C",
+              "displayName": "Temperature C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        -256
+      ],
+      "id": "8c7beaab-eb5d-40c3-a83e-e53e7097a6d6",
+      "name": "Append row in sheet",
+      
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "in_item = _items\nall_data = []\n\nfor item in in_item:\n  a = item[\"json\"][\"output\"]['temperature']\n  b = a['value']\n  \n  c = round((b -32) * 5/9,2)\n\n  all_data.append({\"json\":{\"Farnhight\":b,\"Celsius\":c }})\n\nreturn all_data\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "33ce772b-568c-4a7a-baee-b2371c085956",
+      "name": "Code in Python"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"temperature\": {\n    \"value\": 85,\n    \"format\": \"Fahrenheit\"\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        192
+      ],
+      "id": "2f2d3fb5-91c4-4eb8-8eef-bf9ec776ae04",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "de573b57-95cf-4e71-bd9a-b4588fce7983",
+  
+  "nodeGroups": [],
+  "id": "g5yKIO1KDIl3PLJm",
+  "tags": []
+}
